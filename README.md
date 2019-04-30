@@ -1,5 +1,4 @@
 # Cancer Among Young Adult Analysis
-
 ![image](figs/1.png)
 
 Contirbutor: Xinzhu Wang (xw2581@columbia.edu), Ying Jin (yj2453@columbia.edu)
