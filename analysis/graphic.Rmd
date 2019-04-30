@@ -21,6 +21,7 @@ We are now graduates in college, exactly young adults. Our lives are just about 
 
 In this project, we want to ask that if the occurrences of cancer among young adult are increasing; if there’s a certain trend, if the trends are different due to different factors like race, gender and age; what are the common types of cancer among young adults; will the common types change in different genders, races, age.  
 
+Our work is published on Github and the link is below: https://github.com/EvelynWangxz/Graphic-Final-Project
 
 #II. Description of the data source
 
