@@ -1,0 +1,12 @@
+name: CommonCancerBrowser
+title: CommonCancerBrowser
+username:
+account: ying04
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 899673
+bundleId: 2050473
+url: https://ying04.shinyapps.io/CommonCancerBrowser/
+when: 1556646811.29637
+asMultiple: FALSE
+asStatic: FALSE

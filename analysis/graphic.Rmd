@@ -1,0 +1,398 @@
+---
+title: "Cancer Among Young Adult Analysis"
+author: "Ying Jin, Xinzhu Wang"
+date: "4/27/2019"
+output: 
+  html_document:
+    code_folding: hide
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(cache = TRUE)
+```
+
+#I. Introduction
+
+As we all know, health is significantly important to everyone. With the improvement of the medical care, people face death due to diseases less likely than the previous. However, cancer, whose defining feature is that the rapid creation of abnormal cells that grow beyond usual boundaries, then invade adjoining parts of the body and spread to other organs, is still a leading cause of death globally. According to WHO, cancer is the second leading cause of death in the world and approximately 1 in 6 deaths is due to cancer. 
+
+Cancer is not common in young adults. Generally, we will think more of cancer when speak of the older, but, we cannot relax alert when we are young. A wide variety of cancer types can occur in our age range, and treating these cancers can be challenging. A study shows that in the US, The diagnoses of cancer in young people(aged 15-39) every year account for 5% of the cancer diagnoses in the US. 70000 young people are diagnosed, approximately 6 times the number of children. Due to the specific age range, there are certain types of cancers more likely to be diagnosed in young adults. 
+
+We are now graduates in college, exactly young adults. Our lives are just about to begin, we should take care of our health and enjoy the life. We  know that for cancer, many have a high chance of cure if diagnosed early and treated adequately. Therefore, to know some facts of the cancer is a good way for us to understand how to keep cancer away better. So we chose this cancer topic, specifically in young adults, to get a general sense of cancer, get to know the facts and based on the facts, try to protect our health better.
+
+In this project, we want to ask that if the occurrences of cancer among young adult are increasing; if there’s a certain trend, if the trends are different due to different factors like race, gender and age; what are the common types of cancer among young adults; will the common types change in different genders, races, age.  
+
+
+#II. Description of the data source
+
+Xinzhu is responsible for collecting the data. She found the data from Centers for Disease Control and Prevention about different cancers.
+
+(The website link is: https://wonder.cdc.gov/controller/datarequest/D144;jsessionid=B02F005B44357B350ADB066D1E56130B.)
+
+It needs some choices before sending a request to access data. First choice is about the table layout organization. Under this section, she chose results group by Caner Sites, Year, Age Groups, Sex, and Race. The measures are count and crude rates. This was because that we thought year, age groups, sex and race could be very important factors for the differences in count of cancers. Also we needed to know population by choosing crude rates as a measurement. The second choice is to select a location which the users are most care of. Xinzhu chose The United States because we wanted to focus on the whole America instead of only one state. The third one is about selecting year and demographics. In this section, Xinzhu chose year 2010 to 2015. For age group, she chose 20-24 years and 25-29 years. She selected all sexes and all race respectively for sex and race parts. By doing these selections, we hoped to do researches on the most related years and age groups, so that we could come up with some illustrations to ourselves and to our age group. The fourth one is about the cancers of interest, since we don’t have any specific interest, Xinzhu chose all sites, invasive and in situ under Cancer Sites. The last section is about the display preference. She chose to show zero values, show suppressed values, 2 decimal places for precision, 10 minutes for data access timeout and 2000 U.S std. million for population for age-adjusted rates. We chose these because we wanted to maintain the raw data so that we can do the analysis on suppressed and zero values. 
+
+The raw dataset we requested based on above selections has 12532 rows and 8 columns. In the dataset, there are three nominal variables: cancer sites, sex and race, three discrete variables: year, count and population, one binned discrete variable age groups, and one continuous variable: crude rate. 
+
+One problem we encountered is that one variable named “Notes” is not useful and what we need to do analysis which will be deleted later when cleaning data. The content for “Notes” is on the last few rows in the dataset which should be removed as well. The second problem is that the the number of Female Breast and Male Breast and in Situ Breast Cancer is not counted in the All Invasive Cancer Sites Combined and some related data missed as well. Therefore, we decided to deleted this part of data in the following steps. Some information is obtained from the Dataset Documentation provided by the website. (The link of the Dataset Documentation is: https://wonder.cdc.gov/wonder/help/cancer-v2015.html#.)
+
+
+#III. Description of data import / cleaning / transformation
+
+```{r,message=FALSE,warning = FALSE}
+# loading libraries
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(ggthemes)
+library(viridis)
+library(gridExtra)
+```
+
+In the previous analysis, we disclosed that the variable “Notes” and its content should be deleted. The imported raw data also became disordered because of the meaningless variables, so we finally decided to remove them from the txt file. And now we import the data.
+
+```{r}
+cancer <- read.table("../data/tidy/data_p.txt",fill = T, header = T)
+head(cancer, 3)
+```
+
+When we chose to export the data from the website, a code variable for each variable is exported as well. Like year code and age groups code, we decided to remove some useless code variables from the dataset. At the same time, we retained some code variables to make the analysis easier by only calling their codes like cancer sites code and sex code. What else, we discovered that when we used read.table() to read txt file, cells called “not applicable” would be divided as two cells and “applicable” or "not" would occupy one single row. So we deleted the row with only one cell named “applicable” or "not". Furthermore, since " not applicable" means the situation is not applicable, we can just easily remove them. For population column, we want to keep the "other races and unknown combined" data, so we just simply keep those "not applicable" here. When we will use the population column, we will remove them.
+
+```{r}
+cancer_c <- cancer %>% dplyr::select(-14,-4,-5,-10) %>% filter(Cancer.Sites != "Applicable" & Cancer.Sites != "Not" & Count != "Not" & Count != "Applicable") 
+#head(cancer_c,3)
+```
+
+After preliminary cleaning of data, we still needed to do some transformation making the dataset to be ready to do further analysis. Firstly, we divided the all invasive cancer sites and the specific cancer diseases, because we wanted to do the analysis both on the overall condition and the specific situation. Then we could compare the results and obtained more accurate conclusions. What's worth mentioning is that, since the dataset lists data for in situ Breast Cancers separately, not included in the "All Invasive Cancer Sites Combined" category and when we try to unite them, NAs are generated, we decide to remove those data. What's more, the data for this category is relatively small, so it will not impact significantly on our analysis. 
+
+Here is our overall cancer data.
+```{r,warning = FALSE }
+cancer_all <- cancer_c %>% filter(Cancer.Sites.Code == 0)
+cancer_all$Count <- as.numeric(as.character(cancer_all$Count))
+cancer_all[which(cancer_all$Race == "American Indian or Alaska Native"),]$Race <- "AI-AN"
+cancer_all[which(cancer_all$Race == "Asian or Pacific Islander"),]$Race <- "A-PI"
+cancer_all[which(cancer_all$Race == "Black or African American"),]$Race <- "B-AA"
+cancer_all[which(cancer_all$Race == "Other Races and Unknown combined"),]$Race <- "ORU"
+head(cancer_all,3)
+```
+     
+Secondly, by observing the dataset, we thought that there are 100 levels for cancer sites. From the documentatioin and the website, we can divide the levels into several classes. Therefore, we deleted all third class diseases and only kept first and second class diseases. Besides, we separate the first class and second class for different purposes. And for a clear view on the future graph, we renamed the race column.  
+
+```{r}
+cancer_noall <- cancer_c %>% filter(Cancer.Sites.Code != 0 & Cancer.Sites.Code != "Breast-InSitu"  & Cancer.Sites.Code != "Breast-InSitu-Male" & Cancer.Sites.Code != "Breast-InSitu-Female")
+
+a <- c(which(cancer_noall$Cancer.Sites.Code == "21041-21049")[1] : (which(cancer_noall$Cancer.Sites.Code == "21060")[1] - 1))
+cancer_noall <- cancer_noall[-a,]
+b <- c(which(cancer_noall$Cancer.Sites.Code == "21071")[1] : (which(cancer_noall$Cancer.Sites.Code == "21080")[1] - 1))
+cancer_noall <- cancer_noall[-b,]
+c <- c(which(cancer_noall$Cancer.Sites.Code == "33011")[1] : (which(cancer_noall$Cancer.Sites.Code == "33041-33042")[1] - 1))
+cancer_noall <- cancer_noall[-c,]
+d <- c(which(cancer_noall$Cancer.Sites.Code == "33041")[1] : (which(cancer_noall$Cancer.Sites.Code == "34000")[1] - 1))
+cancer_noall <- cancer_noall[-d,]
+e <- c(which(cancer_noall$Cancer.Sites.Code == "35013")[1] : (which(cancer_noall$Cancer.Sites.Code == "36010")[1] - 1))
+cancer_noall <- cancer_noall[-e,]
+cancer_noall$Race <- as.character(cancer_noall$Race)
+cancer_noall[which(cancer_noall$Race == "American Indian or Alaska Native"),]$Race <- "AI-AN"
+cancer_noall[which(cancer_noall$Race == "Asian or Pacific Islander"),]$Race <- "A-PI"
+cancer_noall[which(cancer_noall$Race == "Black or African American"),]$Race <- "B-AA"
+cancer_noall[which(cancer_noall$Race == "Other Races and Unknown combined"),]$Race <- "ORU"
+
+labels <- c("20010-20100","21010-21130","22010-22060","23000", "24000", "25010-25020", "26000", "27010-27070","28010-28040", "29010-29040", "30000", "31010-31040", "32010-32020","33011-33042","34000","35011-35043", "36010", "36020", "37000")
+cancer1_m <- cancer_noall %>% filter(Cancer.Sites.Code %in% labels)
+#head(cancer1_m,5)
+
+cancer2_m <- cancer_noall[-which(cancer_noall$Cancer.Sites.Code %in% labels),]
+#head(cancer2_m,5)
+```
+
+lastly, in order to do further analysis on missing values, we leave the “suppressed” on the count column on purpose. We believed that there should be a special pattern for the missing values. After this, we will remove them for specific analysis.
+
+Here is a display on our first and second class cancer cleaning dataset without missing data.
+```{r}
+cancer1 <- cancer1_m %>% filter(Count != "Suppressed")
+cancer2 <- cancer2_m %>% filter(Count != "Suppressed")
+cancer1$Count <- as.numeric(as.character(cancer1$Count))
+cancer2$Count <- as.numeric(as.character(cancer2$Count))
+head(cancer1,3)
+head(cancer2,3)
+```
+
+#IV. Analysis of missing values
+
+Since in the documentation, it says that "suppressed" data is for privacy, like race or gender, we analyse the pattern by two levels: race and gender. We use first class cancer to analyze since there's no suppressed data in all category and second class is way too much for analysis where first class is believed to be enough.
+
+For the gender, we can see that male are more protective than female. There are 9 cancer sites, in which female and male's data is suppressed. The types of data that only men suppress are more than women do. There is not much cancer sites to be uncovered.  
+```{r, warning=FALSE}
+cancer_s <- cancer1_m %>% dplyr::select(1,5,8)
+cancer_s$Count <- as.numeric(as.character(cancer_s$Count))
+ggplot(cancer_s, aes(x = Cancer.Sites, y = Sex, fill = Count)) +
+  geom_tile(color = "white") + 
+  scale_fill_gradient(low = "grey80", high = "red", na.value = "black") + 
+  ggtitle("Missing Value by Gender")+
+  xlab("Cancer Sites")+
+  theme_classic() + coord_flip()+theme(axis.line = element_blank(),
+                                  axis.ticks = element_blank())
+
+```
+
+
+For the race, we can see that white people are most sharing and American Indian or Alaska Native is most protective. According to the cancer sites, there are multiple missing patterns, lacking data for Asian or Pacific Insider, American Indian or Alaska Native and Other Races and Unknown is the most common pattern. The second common missing pattern is that the lacking data from Other Races and Unknown and American Indian or Alaska Native. It shows that cancer site, bones and joints, is most suppressed data while male genital system is most public with no suppressed data.
+```{r}
+cancer1_m[which(cancer1_m$Count == "Suppressed"),]$Count <- NA
+cancer_r <- cancer1_m %>% dplyr::select(1,7,8)
+
+cancer_r$Count <- as.numeric(as.character(cancer_r$Count))
+
+ggplot(cancer_r, aes(x = Cancer.Sites, y = Race, fill = Count)) +
+  geom_tile(color = "white") + 
+  scale_fill_gradient(low = "grey80", high = "red", na.value = "black") + 
+  ggtitle("Missing Value Pattern by Race")+
+  xlab("Cancer Sites")+
+  labs(caption = paste(c(" A-PI: Asian or Pacific Islander; AI-AN: American Indian or Alaska Native;"),"\n"                                  ,c(" B-AA: Black or African American; ORU: Other Races and Unknown combined")))+
+  theme_classic() + coord_flip()+theme(axis.line = element_blank(),
+                                  axis.ticks = element_blank(),
+                                  plot.caption =element_text(color = "grey",hjust = 0))
+```
+
+In the following analysis, we should take missing data into account if there's 0 or other situations that to be needed to pay attention for the missing value.
+
+#V. Results
+
+We divide the data into three section: all cancer site for overall cancer analysis among young adults, first class cancer site for specific cancer analysis. In this static graphs part, we will use the former two part to do the exploratory darta analysis.
+
+## 1.Overall Analysis
+
+Year:density 
+```{r}
+cancer_year <- data.frame(year = cancer_all$Year, count = cancer_all$Count)
+cancer_year1 <- aggregate(cancer_year$count, by=list(Category=cancer_year$year), FUN=sum)
+colnames(cancer_year1) <- c("year","count")
+cancer_year$count <- as.factor(cancer_year$count)
+g1 <- ggplot(cancer_year1,aes(x = year, y = count, group = 1)) + geom_line(col = "lightblue", size=1.5) + geom_point(size=2, shape=20, col = "red") + theme_solarized()
+g1
+```
+
+
+Age:bar
+```{r}
+cancer_age <- data.frame(age = cancer_all$Age.Groups.Code, count = cancer_all$Count, year = as.factor(cancer_all$Year))
+cancer_age1 <- aggregate(count~age+year, data = cancer_age, FUN="sum")
+g2 <- ggplot(cancer_age1, aes(x = age, y = count, fill = year)) + geom_bar(stat = "identity", position = "dodge") + scale_fill_brewer(palette = 4)+ theme(axis.text.x = element_text(size = 7, angle = 10)) + theme_solarized()
+g2
+```
+
+Sex:bar
+```{r}
+cancer_sex <- data.frame(year = as.factor(cancer_all$Year), sex = cancer_all$Sex.Code, count = cancer_all$Count)
+cancer_sex1 <- aggregate(count~sex+year, data = cancer_sex, FUN="sum")
+g3 <- ggplot(cancer_sex1,aes(x = sex, y = count, fill = year)) + geom_bar(stat = "identity", position = "dodge") + scale_fill_brewer(palette = 4)+ theme(axis.text.x = element_text(size = 7, angle = 10)) + theme_solarized()
+g3
+```
+
+Race:bar
+```{r}
+cancer_race <- data.frame(year = as.factor(cancer_all$Year), race = cancer_all$Race, count = cancer_all$Count, pop = cancer_all$Population)
+cancer_race <- cancer_race[cancer_race$pop!="Not",]
+cancer_race$rate <- as.numeric(as.character(cancer_race$count))/as.numeric(as.character(cancer_race$pop))
+cancer_race1 <- aggregate(rate~race+year, data = cancer_race, FUN="sum")
+g3 <- ggplot(cancer_race1,aes(x = race, y = rate, fill = year)) + geom_bar(stat = "identity", position = "dodge") + scale_fill_brewer(palette = 4)+ theme(axis.text.x = element_text(size = 7, angle = 10))+ theme_solarized()
+g3
+```
+
+## 2.Cancer Sites Analysis
+
+Now let's move on to specific cancer site and we will focus on year, age, gender and race to see the pattern.
+
+### -By Year
+The graph below shows that the incidence counts in most cancer site are similar in each year. There is no significant increase on the number and some of them has a backward trend, maybe due to the improvement of the medical care. However,The digestive system has a rapid increasing trend for cancer site.
+
+It tells us that the incidence counts of various cancer sites have a great range from 0 to 4000, which suggests for young adult, different types of cancer have different likelihoods to be diagnosed. We can clearly see that the endocrine system is most common as a cancer site and incidence counts are increasing until 2014. Fortunately, incidence counts slightly decrease in 2015, which is a good sign. Lymphomas, Male Genital System, Skin excluding Basal and Squamous, Female Genital System, Digestive System, Leukemias, Male and Female Breast and Brain and Other Nervous System are other relatively common cancer sites for people aged 20 to 29.
+
+```{r,warning = FALSE}
+df <- cancer1 %>%  dplyr::select(3,1,8) %>% tibble::rowid_to_column() %>% spread(Cancer.Sites, Count) %>% group_by(Year) %>% summarise_each(funs(sum(.,na.rm = T))) %>% dplyr::select(-2) %>% gather(Type, num, -Year)
+df$Year <- as.factor(df$Year)
+ggplot(df, aes(x = num, y = reorder(Type,num), color = Year)) + 
+            geom_point()+xlab("Count")+
+            ylab("Cancer Sites") +
+            ggtitle("Incidence Counts Distribution") +
+           theme_solarized()
+
+```
+
+### -By Age
+
+Because of the lack of population in Other Races and Unknown and the similar population of young adult in 20-24 and 25-29, which will not affects the comparison, we simply compare the incidence counts. What's more, we choose the latest year, 2015, to study the present situation.
+
+It is indicated from the barplot below that young adults in 25-29 are more likely to have cancer. We can see a similar pattern in two age ranges, which makes sense because two age ranges are close. The most 3 common cancer sites are the same: Endocrine System, Lymphomas and Male Genital System. However, in the overall increasing incidence counts trend, the risk of cancers in Breast and Female Genital System which has been significantly increased worth additional attention.
+
+```{r,warning = FALSE,message=FALSE}
+
+agearea <- cancer1 %>% filter(Year == "2015") %>% dplyr::select(Age.Groups.Code,1,8) %>% tibble::rowid_to_column() %>% spread(Age.Groups.Code, Count) %>% group_by(Cancer.Sites) %>% summarise_each(funs(sum(.,na.rm = T))) %>% dplyr::select(-2)
+agearea[,2] <- agearea[,2] *(-1)
+agearea <- agearea %>% gather(Age, Count, -Cancer.Sites)
+
+ggplot(agearea, aes(x = reorder(Cancer.Sites, abs(Count)), y = Count, group = Age, fill = Age)) + 
+               geom_bar(position = "stack", stat = "identity")  + 
+               scale_y_continuous(labels = c(3000,2500,2000,1500,1000,500,0,500,1000,1500,2000,2500,3000), 
+                                  breaks = seq(-3000,3000,500))+
+               xlab("Cancer Sites")+ 
+               ggtitle("Incidence Counts Distribution", subtitle = "-Age Comparison") + 
+               theme_solarized()+
+               scale_fill_discrete(name = "Age")+
+               coord_flip()
+
+```
+
+### -By Sex
+
+For the same reason, we simply compare the incidence counts in gender in 2015. Unlike the age, the differences in counts are not that obvious. It seems like women are slightly more likely to have cancer than men. 
+
+Neverthless, the differences in sites between gender are relatively huge. For male, the risk of cancer in Male Genital System and Lymphomas is the greatest while for female, the most common cancer site is Endocrine System. These cancer sites have a much more likelihood than others, which suggests that for genders, there are specific types of cancer more easily to be had. For women, except for the most common cancer site, Lymphomas, Skin excluding Basal and Squamous, Female Genital System and Breast worth mentioning since the incidence counts for them are about the same. 
+
+```{r,warning = FALSE}
+gender <- cancer1 %>% filter(Year == "2015") %>% dplyr::select("Sex",1,8) %>% tibble::rowid_to_column() %>% spread(Sex, Count) %>% group_by(Cancer.Sites) %>% summarise_each(funs(sum(.,na.rm = T))) %>% dplyr::select(-2)
+gender$Male <- gender$Male *(-1)
+gender <- gender %>% gather(Sex, Count, -Cancer.Sites)
+ggplot(gender, aes(x = reorder(Cancer.Sites, abs(Count)), y = Count, group = Sex, fill = Sex)) + 
+               geom_bar(position = "stack", stat = "identity")  + 
+               scale_y_continuous(labels = c(4000,3000,2000,1000,0,1000,2000,3000,4000), 
+                                  breaks = seq(-4000,4000,1000))+xlab("Cancer Sites")+ 
+               ggtitle("Incidence Counts Distribution", subtitle = "-Gender Comparison") + 
+               theme_solarized()+
+                scale_fill_discrete(name = "Gender")+
+               coord_flip()
+
+```
+
+
+### -By Race
+
+Since the population is not applicable only for the Other races and Unknown, we first use the population to caculate crude rates(simply count/population) for different races to see the different patterns between races in 2015. 
+
+Some facts are shown from the plot: Asian or Pacific Islander accounts for the most cases in Endocrine System; White accounts for the most part of the cancer in Male Genital System and almost all part in Skin excluding Basal and Squamous, while hardly has cancer in Kaposi Sarcoma; Black or African American is least likely to have cancer in Male Genital System; for Lymphomas, Digestive System, Female Genital System, Breast and Leukemias, the chances for 3 races, excluding Amerian Indian or Alaska Native(we can see from the missing value pattern that most of its data is suppressed) are about the same. Considering a lot suppressed data, overall, it can be concluded that except for few cancer sites, the cancer sites do not have a preference for races.
+
+```{r}
+
+race2 <- cancer1%>% filter(Year == "2015")  %>% filter(Population != "Not") %>% dplyr::select(1,7,8) %>% tibble::rowid_to_column() %>% spread(Cancer.Sites, Count) %>% group_by(Race) %>% summarise_each(funs(sum(.,na.rm = T))) %>% dplyr::select(-2)
+
+pop <-cancer1 %>% filter(Year == "2015") %>% filter(Population != "Not") %>% dplyr::select(1,7,9) %>%
+group_by(Race) %>% summarise(population = sum(as.numeric(as.character(Population)),na.rm = T))
+pop[,2:20] <-as.numeric(as.character(pop$population)) 
+
+df <- race2[,-1]/pop[,-1] *1000000
+df <- cbind(race = race2$Race, df)
+df$race <- as.character(df$race)
+sum <- as.numeric(apply(df[,-1],-1,sum))
+df1 <- rbind(data.frame(apply(df[-1], -1, as.numeric)), sum)
+df1 <- cbind(race = c(df$race,"sum"), df1)
+colnames(df1) <- colnames(df)
+p <- df1[-5,] %>% gather(type, rate, -race) 
+ggplot(p, aes(x = reorder(type,rate), y = rate, fill = race)) +
+          geom_bar(stat = "identity")+ 
+          xlab("Cancer Sites")+
+          ylab("Rate")+
+          ggtitle("Cancer Crude Rate Distribution")+
+          theme_solarized()+
+          theme(axis.line = element_blank(),
+                 axis.ticks = element_blank())+
+   labs(caption = paste(c("Rate: The number of people diagnosed with cancer per 1 million people"),"\n","\n",
+                        c(" A-PI: Asian or Pacific Islander; AI-AN: American Indian or Alaska Native;"),"\n",
+                        c(" B-AA: Black or African American; ORU: Other Races and Unknown combined")))+
+          coord_flip()
+
+```
+
+Then, we also look into the race itself to see some patterns within race. We calculate the percentage of different cancer sites in all cancer incidence(count for a cancer site in a race/count in a race) for different races. It also can be shown from the previous graph and we just want to make it more clear. 
+
+Within race, we can see that the cancer site distribution within white is more balanced. Taking missing value into account, this seems reasonable. So the comparison here is rough due to the missing value's existence. Just for a general overview, we can know that the most common cancer sites for Asian or Pacific Islander are Endocrine System and Lymphomas;for Black or African American is Lymphomas; for Other Races and Unknown are Skin excluding Basal and Squamous and Endocrine System; for White are Endocrine System, Male Genital System, Lymphomas and Skin excluding Basal and Squamous. For American Indian or Alaska Native, the data is not convincing due to missing value, so we don't analyse it here.
+
+```{r,warning = FALSE}
+Race <- cancer1 %>% filter(Year == "2015") %>% dplyr::select(7,1,8) %>% tibble::rowid_to_column() %>% spread(Cancer.Sites, Count) %>% group_by(Race) %>% summarise_each(funs(sum(.,na.rm = T))) %>% dplyr::select(-2)
+names <- colnames(Race)
+Race$Race<-as.character(Race$Race)
+Race$total <- as.numeric(apply(Race[,-1], 1, sum))
+Race <- cbind(Race = Race$Race, data.frame(apply(Race[,-1], -1, as.numeric)))
+colnames(Race) <- c(names,"total")
+for (j in 2:21){
+
+  for (i in 1:5){
+
+  Race[i,j] <- 100 * Race[i,j]/Race[i,21]
+  }
+}
+
+df <- Race %>% dplyr::select(-21) %>% gather(Type, rate, -Race)
+
+ggplot(df, aes(x = Race, fill = round(rate, 2), y = Type))  + 
+           geom_tile()  + 
+           ylab("Cancer Sites") + 
+           ggtitle("Cancer Incidence Rate Distribution within Race (Unit: %)") +
+           geom_text(aes(label = round(rate, 2)),  color = "white") +
+           labs(caption = paste(c(" A-PI: Asian or Pacific Islander; AI-AN: American Indian or Alaska Native;"),"\n"                                  ,c(" B-AA: Black or African American; ORU: Other Races and Unknown combined")))+
+           scale_fill_viridis()+
+           guides(fill=FALSE) +
+           theme_classic() +theme(axis.line = element_blank(),
+                                  axis.ticks = element_blank(),
+                                  plot.caption =element_text(color = "grey",hjust = 0))
+        
+```
+
+
+## VI. Interactive component
+
+For interactive part, in order to get a general sense on common cancer sites for young adult more specifically, we use the second level cancer site data. Here we focus on present situation so we choose the data in 2015. 
+
+We used shiny app in Rstudio for showing the result. Here is our app link: https://ying04.shinyapps.io/CommonCancerBrowser/.
+
+In the app, we show the results of cancer sites for different combination in age, sex and race. Users can choose these three variables according to their own interests through filter("Choose Conditions") in the left and then the app will show the most common cancer sites for that specific condition in a picture of body (generally 5 sites, if less than 5, then other sites' data for this is not recorded). At the mean time, below the picture, a barplot including all the recorded data is shown for more details. 
+
+```{r,warning = FALSE}
+# Year
+df <- cancer2 %>%  dplyr::select(3,1,8) %>% tibble::rowid_to_column() %>% spread(Cancer.Sites, Count) %>% group_by(Year) %>% summarise_each(funs(sum(.,na.rm = T))) %>% dplyr::select(-2) %>% gather(Type, num, -Year)
+df$Year <- as.factor(df$Year)
+g1 <-  df %>%  group_by(Year) %>% top_n(5, num) %>% ungroup()
+
+# Age
+df <- cancer2 %>%  filter(Year == "2015") %>%  dplyr::select(4,1,8) %>% tibble::rowid_to_column() %>% spread(Cancer.Sites, Count) %>% group_by(Age.Groups.Code) %>% summarise_each(funs(sum(.,na.rm = T))) %>% dplyr::select(-2) %>% gather(Type, num, -Age.Groups.Code)
+df$Age.Groups.Code <- as.factor(df$Age.Groups.Code)
+g2 <-  df %>%  group_by(Age.Groups.Code) %>% top_n(5, num) %>% ungroup()
+
+#Sex
+df <- cancer2 %>% filter(Year == "2015") %>% dplyr::select(5,1,8) %>% tibble::rowid_to_column() %>% spread(Cancer.Sites, Count) %>% group_by(Sex) %>% summarise_each(funs(sum(.,na.rm = T))) %>% dplyr::select(-2) %>% gather(Type, num, -Sex)
+df$Sex <- as.factor(df$Sex)
+g3 <- df %>%  group_by(Sex) %>% top_n(5, num) %>% ungroup()
+
+#Race
+df <- cancer2 %>%  filter(Year == "2015") %>%  dplyr::select(7,1,8) %>% tibble::rowid_to_column() %>% spread(Cancer.Sites, Count) %>% group_by(Race) %>% summarise_each(funs(sum(.,na.rm = T))) %>% dplyr::select(-2) %>% gather(Type, num, -Race)
+df$Race <- as.factor(df$Race)
+g4 <- df %>%  group_by(Race) %>% top_n(5, num) %>% ungroup() %>% filter(num != 0)
+
+#sex & age
+df <- unite(cancer2%>% filter(Year == "2015"),"age_sex", 4:5, sep = "_" ) 
+df <- df %>% dplyr::select(4,1,7) %>% tibble::rowid_to_column() %>% spread(Cancer.Sites, Count) %>% group_by(age_sex) %>% summarise_each(funs(sum(.,na.rm = T))) %>% dplyr::select(-2) %>% gather(Type, num, -age_sex)
+df$age_sex <- as.factor(df$age_sex)
+g5<-  df %>%  group_by(age_sex) %>% top_n(5, num) %>% ungroup()%>% filter(num != 0) %>% filter(age_sex == "20-24_Female")
+
+#sex & race
+df <- unite(cancer2%>% filter(Year == "2015"),"sex_race", 6:7, sep = "_" ) 
+df <- df %>% dplyr::select(6,1,7) %>% tibble::rowid_to_column() %>% spread(Cancer.Sites, Count) %>% group_by(sex_race) %>% summarise_each(funs(sum(.,na.rm = T))) %>% dplyr::select(-2) %>% gather(Type, num, -sex_race)
+df$sex_race <- as.factor(df$sex_race)
+g6<-  df %>%  group_by(sex_race) %>% top_n(5, num) %>% ungroup()%>% filter(num != 0)
+
+# age & race
+
+df <- unite(cancer2%>% filter(Year == "2015"),"age_race", c(4,7), sep = "_" ) 
+df <- df %>% dplyr::select(4,1,7) %>% tibble::rowid_to_column() %>% spread(Cancer.Sites, Count) %>% group_by(age_race) %>% summarise_each(funs(sum(.,na.rm = T))) %>% dplyr::select(-2) %>% gather(Type, num, -age_race)
+df$age_race <- as.factor(df$age_race)
+ g7<-  df %>%  group_by(age_race) %>% top_n(5, num) %>% ungroup()%>% filter(num != 0)
+
+#sex&race&age
+
+df <- unite(cancer2%>% filter(Year == "2015"),"ars", c(4,6,7), sep = "_" ) 
+df <- df %>% dplyr::select(4,1,6) %>% tibble::rowid_to_column() %>% spread(Cancer.Sites, Count) %>% group_by(ars) %>% summarise_each(funs(sum(.,na.rm = T))) %>% dplyr::select(-2) %>% gather(Type, num, -ars)
+df$ars <- as.factor(df$ars)
+g8<- df %>%  group_by(ars) %>% top_n(5, num) %>% ungroup()%>% filter(num != 0) %>% filter(ars == "20-24_F_White")
+
+```
+
+## VI. Conclusion
+
+

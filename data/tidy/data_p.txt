@@ -1,4 +1,4 @@
-"Notes"	"Cancer Sites"	"Cancer Sites Code"	"Year"	"Year Code"	"Age Groups"	"Age Groups Code"	"Sex"	"Sex Code"	"Race"	"Race Code"	Count	Population	Crude Rate
+	"Cancer Sites"	"Cancer Sites Code"	"Year"	"Year Code"	"Age Groups"	"Age Groups Code"	"Sex"	"Sex Code"	"Race"	"Race Code"	Count	Population	Crude Rate
 	"All Invasive Cancer Sites Combined"	"0"	"2010"	"2010"	"20-24 years"	"20-24"	"Female"	"F"	"American Indian or Alaska Native"	"1002-5"	37	174104	21.25
 	"All Invasive Cancer Sites Combined"	"0"	"2010"	"2010"	"20-24 years"	"20-24"	"Female"	"F"	"Asian or Pacific Islander"	"A-PI"	165	659089	25.03
 	"All Invasive Cancer Sites Combined"	"0"	"2010"	"2010"	"20-24 years"	"20-24"	"Female"	"F"	"Black or African American"	"2054-5"	435	1729210	25.16
@@ -12479,55 +12479,3 @@
 	"Male Breast, In Situ"	"Breast-InSitu-Male"	"2015"	"2015"	"25-29 years"	"25-29"	"Male"	"M"	"Black or African American"	"2054-5"	0	1727399	0.00
 	"Male Breast, In Situ"	"Breast-InSitu-Male"	"2015"	"2015"	"25-29 years"	"25-29"	"Male"	"M"	"White"	"2106-3"	Suppressed	8629074	Suppressed
 	"Male Breast, In Situ"	"Breast-InSitu-Male"	"2015"	"2015"	"25-29 years"	"25-29"	"Male"	"M"	"Other Races and Unknown combined"	"2131-1"	0	Not Applicable	Not Applicable
-"---"
-"Dataset: United States and Puerto Rico Cancer Statistics, 1999-2015 Incidence"
-"Query Parameters:"
-"Age Groups: 20-24 years; 25-29 years"
-"Year: 2010; 2011; 2012; 2013; 2014; 2015"
-"Group By: Cancer Sites; Year; Age Groups; Sex; Race"
-"Show Totals: Disabled"
-"Show Zero Values: True"
-"Show Suppressed: True"
-"Calculate Rates Per: 100,000"
-"Standard Population: 2000 U.S. Std. Million"
-"---"
-"Help: See http://wonder.cdc.gov/wonder/help/cancer-v2015.html for more information."
-"---"
-"Query Date: Apr 28, 2019 2:35:01 AM"
-"---"
-"Suggested Citation: United States Cancer Statistics: 1999 - 2015 Incidence, WONDER Online Database. United States Department of"
-"Health and Human Services, Centers for Disease Control and Prevention and National Cancer Institute; 2018. Accessed at"
-"http://wonder.cdc.gov/cancer-v2015.html on Apr 28, 2019 2:35:01 AM"
-"---"
-Messages:
-"1. Totals are not available for these results due to suppression constraints. More Information:"
-"http://wonder.cdc.gov/wonder/help/faq.html#Privacy."
-"---"
-Footnotes:
-"1. Data for in situ breast cancers are listed separately and are not included in the ""All Invasive Cancer Sites Combined"" or"
-"""Male and Female Breast"" cancer categories."
-"---"
-Caveats:
-"1. 'Suppressed' is displayed for data values when they must not be provided in order to protect personal privacy. Data is"
-"suppressed if fewer than 16 cases are reported in any one line of the results table. Data for the ""Asian / Pacific Islander"","
-"""American Indian or Alaska Native"", and the ""Other Races Combined"" race categories are suppressed at the Metropolitan"
-"Statistical Area level for populations less than 50,000 persons. Data are suppressed at the state level for certain race and"
-"ethnicity groups: 1) American Indian or Alaska Native data are suppressed at the state level for Delaware, Illinois, Kansas,"
-"Kentucky, New Jersey, and New York; 2) Asian or Pacific Islander data are suppressed at the state level for Delaware, Kansas,"
-"and Kentucky; 3) Hispanic data are supressed at the state level for Delaware, Kentucky, and Massachusetts. More information:"
-"http://wonder.cdc.gov/wonder/help/cancer-v2015.html#Confidentiality."
-"2. 'Not Applicable' is displayed for all data values when sex-specific cancers are combined with the wrong sex. More"
-"information: http://wonder.cdc.gov/wonder/help/cancer-v2015.html#Genital Cancers List."
-"3. The ""Show Totals"" checkbox is disabled when data are grouped by Cancer Sites or by Childhood Cancer, because aggregate"
-"values are displayed in the table. Also be aware that charts and maps containing both aggregate and detail data could be"
-"misleading."
-"4. Age-adjusted rates are not available when results are grouped by age."
-"5. Data are from selected statewide and metropolitan area cancer registries that meet data quality criteria. Incidence data"
-"shown for the United States are diagnoses and populations from included registries only."
-"6. Information on primary site, behavior, and histology was coded according to the International Classification of Diseases for"
-"Oncology, Third Edition (ICD-O-3) and categorized according to the revised SEER recodes dated January 27, 2003, which define"
-"standard groupings of primary cancer sites."
-"7. For the 2005 year, the Census Bureau estimates that 203,937 persons were displaced from Alabama, Louisiana, Mississippi and"
-"Texas due to Hurricanes Katrina and Rita. CDC WONDER does not include the displaced persons in the 2005 population counts for"
-"these states, nor are these counts included in the summary populations for the affected division, regions or national"
-"population. However, the USCS web site does include these displaced persons in the national population figures for 2005."
