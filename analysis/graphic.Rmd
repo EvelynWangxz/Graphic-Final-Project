@@ -67,6 +67,7 @@ Here is our overall cancer data.
 ```{r,warning = FALSE }
 cancer_all <- cancer_c %>% filter(Cancer.Sites.Code == 0)
 cancer_all$Count <- as.numeric(as.character(cancer_all$Count))
+cancer_all$Race <- as.character(cancer_all$Race)
 cancer_all[which(cancer_all$Race == "American Indian or Alaska Native"),]$Race <- "AI-AN"
 cancer_all[which(cancer_all$Race == "Asian or Pacific Islander"),]$Race <- "A-PI"
 cancer_all[which(cancer_all$Race == "Black or African American"),]$Race <- "B-AA"
@@ -156,44 +157,54 @@ In the following analysis, we should take missing data into account if there's 0
 
 #V. Results
 
-We divide the data into three section: all cancer site for overall cancer analysis among young adults, first class cancer site for specific cancer analysis. In this static graphs part, we will use the former two part to do the exploratory darta analysis.
+We divide the data into three section: all cancer sites for overall cancer analysis among young adults, first class cancer site for specific cancer analysis. In this static graphs part, we will use the former two part to do the exploratory darta analysis.
 
 ## 1.Overall Analysis
 
-Year:density 
+###Year
+When we first looked at the dataset, we wanted to have a general understanding of the differences of cancer sites between different age, sex, and race. So we splited the data to two part. One is called cancer_all with all invasive cancer sites combined instead of only pointing out one disease which will give us an overall understanding. 
+
+We first did analysis on the relationship between year and count. As the graph showed below, with the increase of year, the number of total invasive cancer sites increases dramatically from year 2010 to year 2014. However, the condition gets better from year 2014 to year 2015. The peak of the count is over 21800 in year 2014 and goes to lower than 21600 in year 2015. This trend seems very reasonable, since the industry growed rapidly which would lead the pollution of air and condition. These would definitely indirectly affect people's health. 
+
 ```{r}
 cancer_year <- data.frame(year = cancer_all$Year, count = cancer_all$Count)
 cancer_year1 <- aggregate(cancer_year$count, by=list(Category=cancer_year$year), FUN=sum)
 colnames(cancer_year1) <- c("year","count")
 cancer_year$count <- as.factor(cancer_year$count)
-g1 <- ggplot(cancer_year1,aes(x = year, y = count, group = 1)) + geom_line(col = "lightblue", size=1.5) + geom_point(size=2, shape=20, col = "red") + theme_solarized()
+g1 <- ggplot(cancer_year1,aes(x = year, y = count, group = 1)) + geom_line(col = "lightblue", size=1.5) + geom_point(size=2, shape=20, col = "red") + theme_solarized() + ggtitle("Relationship Between Year and All Cnacer Sites") 
 g1
 ```
 
 
-Age:bar
+###Age
+Then, we wanted to know the relationship between age and count. From the graph below, we found that the total number of cancer sites of age group 25-29 is obviously larger than that of age group 20-24. Age group 25-29 is approximately 5000 more than age group of 20-24 for every year from 2010 to 2015. What else, for each year, the total number of all invasive cancer sites for each year in each group is in a incremental trend whcih is not very obvious.
+
 ```{r}
 cancer_age <- data.frame(age = cancer_all$Age.Groups.Code, count = cancer_all$Count, year = as.factor(cancer_all$Year))
 cancer_age1 <- aggregate(count~age+year, data = cancer_age, FUN="sum")
-g2 <- ggplot(cancer_age1, aes(x = age, y = count, fill = year)) + geom_bar(stat = "identity", position = "dodge") + scale_fill_brewer(palette = 4)+ theme(axis.text.x = element_text(size = 7, angle = 10)) + theme_solarized()
+g2 <- ggplot(cancer_age1, aes(x = age, y = count, fill = year)) + geom_bar(stat = "identity", position = "dodge") + scale_fill_brewer(palette = 4)+ theme(axis.text.x = element_text(size = 7, angle = 10)) + theme_solarized() + ggtitle("Relationship Between Age and All Cnacer Sites") 
 g2
 ```
 
-Sex:bar
+###Sex
+Next, we did analysis on the relationship between sex and all cancer sites based on each year. We believed that there should be a difference between female and male. In the graph below, the left part is for female and the right part represented male. It is very obvious that female have more cancers than male in each year. This is very common sense that female is more fragile than male and has more probability to suffering cancers.
+
 ```{r}
 cancer_sex <- data.frame(year = as.factor(cancer_all$Year), sex = cancer_all$Sex.Code, count = cancer_all$Count)
 cancer_sex1 <- aggregate(count~sex+year, data = cancer_sex, FUN="sum")
-g3 <- ggplot(cancer_sex1,aes(x = sex, y = count, fill = year)) + geom_bar(stat = "identity", position = "dodge") + scale_fill_brewer(palette = 4)+ theme(axis.text.x = element_text(size = 7, angle = 10)) + theme_solarized()
+g3 <- ggplot(cancer_sex1,aes(x = sex, y = count, fill = year)) + geom_bar(stat = "identity", position = "dodge") + scale_fill_brewer(palette = 4)+ theme(axis.text.x = element_text(size = 7, angle = 10)) + theme_solarized() + ggtitle("Relationship Between Sex and All Cnacer Sites")
 g3
 ```
 
-Race:bar
+###Race
+Finally, we analyzed the relationship between race and all invasive cancer sites. The graph below showed the condition for each race. In the graph, A-PI reprensented Asian or Pacific Islander, AI-AN represented American Indian or Alaska Native, B-AA represented Black or African American, and ORU represented Other Races and Unknown combined. However, the graph didn't show the information for ORU, because the count for ORU is not applicable in the raw dataset. For this part, we compared different races using the ratio of count and population, since we thought the rate would make the result more precise. The graph showed that White people have more probability to have cancers than other race like Black or American African. This results made us think a lot like whether this is because of the eating habit of White people or some other special reasons.  
+
 ```{r}
 cancer_race <- data.frame(year = as.factor(cancer_all$Year), race = cancer_all$Race, count = cancer_all$Count, pop = cancer_all$Population)
 cancer_race <- cancer_race[cancer_race$pop!="Not",]
 cancer_race$rate <- as.numeric(as.character(cancer_race$count))/as.numeric(as.character(cancer_race$pop))
 cancer_race1 <- aggregate(rate~race+year, data = cancer_race, FUN="sum")
-g3 <- ggplot(cancer_race1,aes(x = race, y = rate, fill = year)) + geom_bar(stat = "identity", position = "dodge") + scale_fill_brewer(palette = 4)+ theme(axis.text.x = element_text(size = 7, angle = 10))+ theme_solarized()
+g3 <- ggplot(cancer_race1,aes(x = race, y = rate, fill = year)) + geom_bar(stat = "identity", position = "dodge") + scale_fill_brewer(palette = 4)+ theme(axis.text.x = element_text(size = 7, angle = 10))+ theme_solarized()+labs(caption = paste(c(" A-PI: Asian or Pacific Islander; AI-AN: American Indian or Alaska Native;"),"\n",  c(" B-AA: Black or African American; ORU: Other Races and Unknown combined"))) + ggtitle("Relationship Between Race and All Cnacer Sites") 
 g3
 ```
 
