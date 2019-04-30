@@ -353,7 +353,7 @@ For interactive part, in order to get a general sense on common cancer sites for
 
 We used shiny app in Rstudio for showing the result. Here is our app link: https://ying04.shinyapps.io/CommonCancerBrowser/.
 
-In the app, we show the results of cancer sites for different combination in age, sex and race. Users can choose these three variables according to their own interests through filter("Choose Conditions") in the left and then the app will show the most common cancer sites for that specific condition in a picture of body (generally 5 sites, if less than 5, then other sites' data for this is not recorded). At the mean time, below the picture, a barplot including all the recorded data is shown for more details. 
+In the app, we show the results of cancer sites for different combination in age, sex and race. Users can choose these three variables according to their own interests through filter("Choose Conditions") in the left side bar and then the app will show the most common cancer sites for that specific condition in a picture of body (generally 5 sites, if less than 5, then other sites' data for this is not recorded). At the mean time, below the picture, a barplot including all the recorded data is shown for more details. 
 
 ```{r,warning = FALSE}
 # Year
@@ -405,5 +405,21 @@ g8<- df %>%  group_by(ars) %>% top_n(5, num) %>% ungroup()%>% filter(num != 0) %
 ```
 
 ## VI. Conclusion
+
+After anayzing all cancer sites among young adults and first class cancer site for specific cancer, and finishing building shiny app which shows the most frequent second class cancer sites under different condition, we have a more profound understanding of the cancer sites for young people.
+
+Generally speaking, with the changes of time, more and more young adults get cancers. For different age group of young adults, age between 25 to 29 is more likely to have cancers than age between 20 to 24. At the same time, female has more probability to get cancers than male. What else, among five races, White people seem more likely to have cancers. One exception is that the data for other races is not applicable. 
+
+For specific cancer site, expecially for first class, every cancer have similar amount for each year. The increases for digestive system and endocrine is more obvious than others'. Among different cancer sites, endocrine system is the most common one, almost for every age group, race and sex. Cancer sites like lymphomas，male genital system, skin, female genital, digestive, leukemias, breast and brain are releatively common. It is worth mentioning that it is more easily to get cancer in breast and female genital system between age 25 to 29 than before, which reflects that female should be more careful after age 25 because cancer in breast is more likely to happen on female. The general distribution of cancer sites for two age groups is highly similar. However, sex affects the cancer sites variety a lot. Male is mainly have cancer in male genital and lymphomas. For female, cancers in endocrine, lymphomas, skin, female genital and breast are releatively popular. The distribution of cancer sites for different race is roughly the same. One very small difference is that the most common cancer happened in endocrine for White, Asian or Pacific Islander, and Other Races and Unknown combined. However, lymphomas happened the most for Black or Africa American. 
+
+For interactive part, we found that the most common second class cancer sites are Thyroid, Testis, Melanoma of the skin, Hodgkin Lymphoma, Female Breast, Non-Hodgkin, Lymphoma, Colon and rectum, Brain, Ovary and Cervix Uteri. More specific details are shown in the shiny app.
+
+All in all, there are still some limitations for our project. First is the missing values which is also known as suppressed values. Due to a large amout of suppressed values, we can not do too much analysis on races. Secondly, the year of the data is a little bit out of date. The most recent data is from year 2015 which is several years away from now. Finally, the analysis for three variables' combination might not enough. There conditions mentioned above are all the directions that we can follow to make a better analysis in future.
+
+As we all know, cancers are strongly linked to lifestyle or environmental risk factors no matter for young adults or older people. We hope this project can give youg adults a guide to protect themselves from all kinds of cancers. The most important is to keep exercising and enjoy a healthy life. 
+
+
+
+
 
 
