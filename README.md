@@ -1,6 +1,5 @@
-# Graphic-Final-Project
+# Cancer Among Young Adult Analysis
 
-Contirbutor: Xinzhu Wang
-             
-             
-             Jin Ying
+Contirbutor: Xinzhu Wang, Jin Ying
+
+
