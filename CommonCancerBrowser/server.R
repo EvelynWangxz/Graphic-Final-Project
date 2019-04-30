@@ -146,7 +146,7 @@ shinyServer(function(input, output) {
                              height = 500, alt = "Face"))
                    }
                if(input$race == "B-AA"){
-                 return(list(src = "images/body(1-6.jpg",
+                 return(list(src = "images/body(1)-6.jpg",
                              contentType = "image/jpg",
                              width = 900,
                              height = 500, alt = "Face"))
